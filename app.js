@@ -8,7 +8,16 @@ var add_task_view = function(task){
   task_view.innerHTML = template
 
   task_view.getElementsByClassName("text")[0].textContent = task.text
-  task_view.getElementsByClassName("done")[0].checked = task.done
+  var done_checkbox = task_view.getElementsByClassName("done")[0] 
+  
+  done_checkbox.checked = task.done
+  done_checkbox.addEventListener("change", function(){
+    task.done = done_checkbox.checked
+    var done_request = new XMLHttpRequest()
+
+    done_request.open("PATCH", `http://localhost:4321/tasks/${task.id}`)
+    done_request.send(JSON.stringify({done: task.done}))
+  })
 
   document.body.appendChild(task_view)
 }
