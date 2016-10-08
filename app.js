@@ -39,4 +39,8 @@ add_task_button.addEventListener("click", function(){
   var task_text = prompt("Do What?")
   var new_task = {text: task_text, done: false}
   add_task_view(new_task)
+
+  var new_task_request = new XMLHttpRequest()
+  new_task_request.open("POST", "http://localhost:4321/tasks")
+  new_task_request.send(JSON.stringify(new_task))
 })

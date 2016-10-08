@@ -38,5 +38,10 @@ server.patch("/tasks/:id", function(request, response){
   response.send("Yay!")
 })
 
+server.post("/tasks", function(request, response){
+  var new_task = JSON.parse(request.body)
+  tasks.push(new_task)
+  response.send("Yay!")
+})
 
 server.listen(4321)
