@@ -1,8 +1,9 @@
 var express = require('express')
 var bodyParser = require('body-parser')
-
+var r  = require('rethinkdb')
 var server = express()
 
+var rethinkdb_connection
 
 server.use(bodyParser.text({type: '*/*'}))
 
@@ -11,37 +12,32 @@ server.use(function(request, response, next){
   next()
 })
 
-var tasks = [
-    {id: "1", text: "Go Shopping for Boxers", done: false},
-    
-    {id: "2", text: "Fix Car Noise", done: true},
-    
-    {id: "3", text: "Get Milk You Scrub", done: false},
-    
-    {id: "4", text: "Scrub Self", done: false},
-    
-    {id: "5", text: "Scrub Car", done: false},
-    
-    {id: "6", text: "Don't be a scrub", done: false}
-]
-
 server.get("/tasks", function(request, response){
-  response.send(JSON.stringify(tasks))
+  r.table('tasks').run(rethinkdb_connection, function(error, results){
+    results.toArray(function(error, tasks){
+      response.send(JSON.stringify(tasks))
+    })
+  })
+  
 })
 
 server.patch("/tasks/:id", function(request, response){
-  var updated_task = tasks.find(function(task){
-   return task.id == request.params.id
-  })
   var task_updates = JSON.parse(request.body)
-  updated_task.done = task_updates.done
-  response.send("Yay!")
+  r.table('tasks').get(request.params.id).update({done: task_updates.done}).run(rethinkdb_connection, function(error, results){
+    response.send("Yay!")
+  })
 })
 
 server.post("/tasks", function(request, response){
   var new_task = JSON.parse(request.body)
-  tasks.push(new_task)
-  response.send("Yay!")
+  r.table('tasks').insert(new_task).run(rethinkdb_connection, function(error, results){
+    response.send("Yay!")
+  })
 })
 
-server.listen(4321)
+r.connect({host: 'localhost'}, function(error, connection) {
+  server.listen(4321)
+  if(error){ throw error} 
+  rethinkdb_connection = connection
+})
+
